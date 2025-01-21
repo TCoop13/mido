@@ -1,37 +1,63 @@
-.. SPDX-FileCopyrightText: 2023 Raphaël Doursenaud <rdoursenaud@gmail.com>
-..
-.. SPDX-License-Identifier: CC-BY-4.0
+from mido import Message, MidiFile, MidiTrack
 
+# Create a new MIDI file and tracks for chords, melody, and bassline
+mid = MidiFile()
 
-Glossary
-========
+# Define basic helper functions for creating notes
+def add_chord(track, time, notes, velocity=64, duration=480):
+    """Add a chord (multiple notes) to the track."""
+    for note in notes:
+        track.append(Message('note_on', note=note, velocity=velocity, time=time))
+        time = 0  # Only the first note needs a delay time
+    for note in notes:
+        track.append(Message('note_off', note=note, velocity=velocity, time=duration))
 
-.. glossary::
+def add_melody(track, notes, velocity=64, duration=480, time_between=0):
+    """Add a melody (single notes in sequence) to the track."""
+    for note in notes:
+        track.append(Message('note_on', note=note, velocity=velocity, time=time_between))
+        track.append(Message('note_off', note=note, velocity=velocity, time=duration))
 
-    ascii
-        American Standard Code for Information Interchange.
-        The most popular character encoding standard.
+# Define chords, melody, and basslines
+# Key: A Minor
+chords = [
+    [57, 60, 64],  # Am
+    [55, 59, 62],  # G
+    [53, 57, 60],  # F
+    [48, 52, 55]   # C
+]
 
-    backend
-    backends
-    backend(s)
-        A Mido backend is the interface between the library and the operating
-        system level MIDI stack.
-        See :doc:`backends/index` for more informations.
+melody = [
+    69, 69, 67, 64,  # Am melody line
+    65, 67, 69, 72,  # G melody line
+    72, 74, 76, 77,  # F melody line
+    67, 69, 71, 72   # C melody line
+]
 
-    callback
-        A function called by the :term:`backend` when message(s) are ready to
-        process.
+bassline = [
+    45, 43, 41, 36  # Root notes of Am, G, F, C
+]
 
-    cli
-        Command Line Interface.
+# Create and add the chord track
+chord_track = MidiTrack()
+mid.tracks.append(chord_track)
+for chord in chords:
+    add_chord(chord_track, time=480, notes=chord, duration=960)
 
-    file
-    files
-    midi file
-    standard midi file
-    SMF
-        A standard MIDI file.
+# Create and add the melody track
+melody_track = MidiTrack()
+mid.tracks.append(melody_track)
+add_melody(melody_track, notes=melody, duration=240, time_between=240)
+
+# Create and add the bassline track
+bass_track = MidiTrack()
+mid.tracks.append(bass_track)
+for bass_note in bassline:
+    add_melody(bass_track, notes=[bass_note], duration=960, time_between=480)
+
+# Save the MIDI file
+mid.save("The_Love_Hut_Song.mid")
+print("MIDI file saved as 'The_Love_Hut_Song.mid'")
         As defined by the MIDI Association's specification.
 
     message
